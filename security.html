@@ -1,0 +1,88 @@
+<!--
+title: Security
+description: 
+published: 1
+date: 2020-07-25T22:29:08.976Z
+tags: 
+editor: ckeditor
+-->
+
+<h2>The Layers of Security</h2>
+<p>Good security is based on layers, each layer protecting a different aspect of the application.</p>
+<h3>Layer 1 - Secure Communications</h3>
+<p>All communications between CareBinder.org and your browser is protected with SSL. &nbsp;Your browser should have a lock icon next to the web address bar which indicates that all data sent to/from CareBinder.org is encrypted and safe from snooping.</p>
+<p>&nbsp;</p>
+<h3>Layer 2 - Anti-bot Measures</h3>
+<p>All account interactions with the application (log-in, password reset, account creation) are protected with Google's reCaptcha anti-bot scheme. This layer provides protection against automated brute-force password attacks.</p>
+<p>&nbsp;</p>
+<h3>Layer 3 - Secure Passwords</h3>
+<p>We encourage our users to use strong passwords, and will reject very weak passwords that are vulnerable to dictionary or brute force attacks.</p>
+<p>Your password is used to protect encryption keys that are unique to your account, these keys are an important part of keeping your data safe, therefore the password that you use needs to be strong.</p>
+<p>&nbsp;</p>
+<h3>Layer 4 - Protected Cloud Storage</h3>
+<p>We use Google Cloud Services to store the documents you upload. &nbsp;This means that our onsite storage does not contain your documents, they are one level away, safely stored in Google's Cloud.<br><br>Even though Google Cloud Storage already encrypts all data at rest on their servers, we have added client-side encryption. &nbsp;This means that Google never sees your documents contents, they only see encrypted data, and they do not have access to the keys required to decrypt the data.<br>&nbsp;</p>
+<h3>Layer 5 - Multi-key Encryption</h3>
+<p>All data in your account is encrypted with 2 keys.</p>
+<ol>
+  <li>A unique per-folder key.<br>This key is protected with your account's credentials</li>
+  <li>A strong application key.<br>For an in-depth explanation of how we use application keys, click here<br><br>Application keys are stored in encrypted form, the primary key is stored in Google's Cloud Key Management System. &nbsp;Using Google's KMS allows us to audit key-use and disable all decryption operations in case of emergency.</li>
+</ol>
+<p>Both of these keys are needed in order to view the contacts of any piece of data that you store in CareBinder.org.</p>
+<p>Using two keys provides a layer of safety against internal attacks, even administrators of the application cannot see your data, they lack the ability to access the per-folder key because its protected with your account's credentials.<br>&nbsp;</p>
+<h2>Folder and Application Key Details</h2>
+<p>A detailed description of how we use Folder key's and Application keys.</p>
+<h3>Folder Keys</h3>
+<p>Each folder has a unique key that is required to view folder data (such as a Document, or Contact).</p>
+<ul>
+  <li>This key is protected with your credentials while stored.</li>
+  <li>If you have folder collaborators, then they also have access to this key, and that access is protected with their credentials.</li>
+  <li>We accomplish this by using public/private key pairs assigned to each account,.</li>
+  <li>A Folder key is encrypted with the accounts public key, and can only be decrypted with the private key.</li>
+  <li>The private key is protected with the accounts password.</li>
+</ul>
+<p>This means that if you loose your password, then you also loose access to your data. Unless there is a way to recover the folder key.</p>
+<figure class="table">
+  <table>
+    <tbody>
+      <tr>
+        <td>
+          <p><strong>Escrow Shared Secret</strong></p>
+          <ul>
+            <li>If Enabled, will stored a copy of the folder key, protected by the application key.</li>
+            <li>If disabled, no copy of the folder key will exist.</li>
+          </ul>
+        </td>
+        <td>
+          <figure class="image"><img src="/images/security/escrow-shared-secret.png"></figure>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</figure>
+<ul>
+  <li>Storing a copy of the folder key, allows for recovery of that key if you loose your password. &nbsp;But this is less secure, since that key copy is protected by the application key.</li>
+  <li>Not storing a copy of the folder key means that your data is more secure (using 2 key encryption), but if you loose your password, you loose access to your data, and there is <strong>nothing </strong>we can do to recover it.</li>
+</ul>
+<p>There are some workarounds that allow you to recover access to the data without escrowing a copy of the folder key.</p>
+<ol>
+  <li>Have a collaborator.<ul>
+      <li>Your collaborator can remove you, and then re-add you as a collaborator if you have to reset your pasword.</li>
+      <li>This essentially gives you a fresh copy of the Folder Key, protected with your new credentials, and restores access to the folder data.</li>
+    </ul>
+  </li>
+  <li>Download your public/private key pair, and re-upload it if you loose your password.<ul>
+      <li>This feature does not yet exist, and is under development</li>
+    </ul>
+  </li>
+</ol>
+<p>&nbsp;</p>
+<h3>Application Keys</h3>
+<p>We use Google's Cloud key Management System to provide strong security for our main application key.</p>
+<ul>
+  <li>Every object that is encrypted has its own key.</li>
+  <li>The object key is stored in our database, protected by the main application key.</li>
+  <li>The main application key lives in Google's KMS.</li>
+  <li>During encryption / decryption we do "envelope transactions" with google, essentially sending them the object key blob that we want encrypted or decrypted, and google returns the result of that operation.</li>
+  <li>Google never sees that data that we are handlnig (good for security)</li>
+  <li>The main application key never leaves Google's servers, this is good for security too.</li>
+</ul>
